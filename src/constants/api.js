@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'http://localhost:8000'//'https://gfp-tasker-v0.onrender.com/'
+export const API_BASE_URL = 'https://gfp-tasker-v0.onrender.com/'
 
 export const API_ENDPOINTS = {
   AUTH: {

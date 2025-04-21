@@ -531,34 +531,54 @@ header .container {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: var(--text-primary);
   text-decoration: none;
-  font-weight: 700;
-  font-size: 1.25rem;
+  font-weight: 900;
+  font-size: 1.5rem;
+  letter-spacing: 0.05em;
+  background: linear-gradient(45deg, #8b5cf6, #3b82f6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   transition: all 0.3s;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 [data-theme="dark"] .logo {
-  text-shadow: var(--neon-glow);
+  background: linear-gradient(45deg, #a78bfa, #60a5fa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-shadow: 0 0 10px rgba(139, 92, 246, 0.3),
+               0 0 20px rgba(139, 92, 246, 0.2);
 }
 
 .logo:hover {
-  color: var(--accent-color);
+  background: linear-gradient(45deg, #7c3aed, #2563eb);
+  -webkit-background-clip: text;
+  background-clip: text;
+  transform: scale(1.02);
 }
 
 [data-theme="dark"] .logo:hover {
-  text-shadow: 0 0 15px var(--accent-color), 0 0 30px var(--accent-color);
+  background: linear-gradient(45deg, #9333ea, #3b82f6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-shadow: 0 0 15px rgba(139, 92, 246, 0.5),
+               0 0 30px rgba(139, 92, 246, 0.3);
+  transform: scale(1.02);
 }
 
 .logo-icon {
-  width: 2rem;
-  height: 2rem;
-  color: var(--accent-color);
+  width: 2.5rem;
+  height: 2.5rem;
+  color: #8b5cf6;
   transition: all 0.3s;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 [data-theme="dark"] .logo-icon {
-  filter: drop-shadow(0 0 5px var(--accent-color));
+  color: #a78bfa;
+  filter: drop-shadow(0 0 5px rgba(139, 92, 246, 0.3))
+          drop-shadow(0 0 10px rgba(139, 92, 246, 0.2));
 }
 
 /* Header actions */

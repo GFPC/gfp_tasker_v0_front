@@ -39,39 +39,39 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <div class="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-    <h2 class="text-2xl font-bold mb-6 text-center">Вход в систему</h2>
+  <div class="auth-form">
+    <h2 class="auth-form-title">Вход в систему</h2>
     
     <form @submit.prevent="handleSubmit" class="space-y-4">
-      <div v-if="error" class="p-3 bg-red-100 text-red-700 rounded-lg">
+      <div v-if="error" class="auth-form-error">
         {{ error }}
       </div>
 
-      <div>
-        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+      <div class="auth-form-group">
+        <label for="email" class="auth-form-label">Email</label>
         <input
           id="email"
           v-model="email"
           type="email"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          class="auth-form-input"
           required
         >
       </div>
 
-      <div>
-        <label for="password" class="block text-sm font-medium text-gray-700">Пароль</label>
+      <div class="auth-form-group">
+        <label for="password" class="auth-form-label">Пароль</label>
         <input
           id="password"
           v-model="password"
           type="password"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          class="auth-form-input"
           required
         >
       </div>
 
       <button
         type="submit"
-        class="w-full btn btn-primary"
+        class="auth-form-button btn btn-primary"
         :disabled="isLoading"
       >
         <span v-if="isLoading" class="animate-spin mr-2">⌛</span>
