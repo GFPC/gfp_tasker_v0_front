@@ -1,14 +1,11 @@
-export const API_BASE_URL = 'https://gfp-tasker-v0.onrender.com/'
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 
 export const API_ENDPOINTS = {
   AUTH: {
     REGISTER: '/register',
     LOGIN: '/token',
-    LOGOUT: '/logout'
-  },
-  USERS: {
-    ME: '/users/me',
-    ALL: '/users'
+    LOGOUT: '/logout',
+    ME: '/users/me'
   },
   PROJECTS: {
     ALL: '/projects',
@@ -21,18 +18,19 @@ export const API_ENDPOINTS = {
     ASSIGN: (id) => `/tasks/${id}/assign`,
     STATUS: (id) => `/tasks/${id}/status`
   },
-  
-  // Comments
-  TASK_COMMENTS: (taskId) => `/tasks/${taskId}/comments`,
-  COMMENT: (id) => `/comments/${id}`,
-  
-  // Attachments
-  TASK_ATTACHMENTS: (taskId) => `/tasks/${taskId}/attachments`,
-  ATTACHMENT: (id) => `/attachments/${id}`,
-  
-  // Notifications
+  USERS: {
+    ME: '/users/me',
+    ALL: '/users'
+  },
+  COMMENTS: {
+    BY_ID: (id) => `/comments/${id}`,
+    TASK_COMMENTS: (taskId) => `/tasks/${taskId}/comments`
+  },
+  ATTACHMENTS: {
+    BY_ID: (id) => `/attachments/${id}`,
+    TASK_ATTACHMENTS: (taskId) => `/tasks/${taskId}/attachments`
+  },
   NOTIFICATIONS: '/notifications',
-  NOTIFICATION: (id) => `/notifications/${id}`,
-  MARK_NOTIFICATION_READ: (id) => `/notifications/${id}/read`,
-  MARK_ALL_NOTIFICATIONS_READ: '/notifications/read-all'
+  MARK_NOTIFICATION_READ: (id) => `/notifications/${id}/mark-as-read`,
+  MARK_ALL_NOTIFICATIONS_READ: '/notifications/mark-all-as-read'
 } 

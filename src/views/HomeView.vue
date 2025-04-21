@@ -103,29 +103,62 @@
     </aside>
 
     <!-- Main Content -->
-    <div class="main-content flex-1 p-4">
-      <!-- Projects Section -->
+    <main class="flex-1 p-8">
       <div v-if="currentSection === 'projects'" class="space-y-6">
         <div class="flex justify-between items-center">
-          <h2 class="text-2xl font-bold text-primary">Projects</h2>
+          <h1 class="text-2xl font-bold text-primary">Projects</h1>
           <button @click="openProjectForm" class="btn btn-primary">
             New Project
           </button>
         </div>
-        <ProjectList @success="handleProjectSuccess"  projects=""/>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div v-for="project in projects" :key="project.id" class="card p-6">
+            <h3 class="text-xl font-semibold mb-2 text-primary">{{ project.name }}</h3>
+            <p class="text-secondary mb-4">{{ project.description }}</p>
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-secondary">
+                {{ projectTasks(project.id).length }} tasks
+              </span>
+              <div class="flex gap-2">
+                <button @click="openTaskForm(project)" class="btn btn-secondary">
+                  Add Task
+                </button>
+                <button @click="deleteProject(project.id)" class="btn btn-danger">
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- Tasks Section -->
-      <div v-if="currentSection === 'tasks'" class="space-y-6">
+      <div v-else-if="currentSection === 'tasks'" class="space-y-6">
         <div class="flex justify-between items-center">
-          <h2 class="text-2xl font-bold text-primary">Tasks</h2>
+          <h1 class="text-2xl font-bold text-primary">Tasks</h1>
           <button @click="openTaskForm" class="btn btn-primary">
             New Task
           </button>
         </div>
-        <TaskList @success="handleTaskSuccess" />
+        <div class="grid grid-cols-1 gap-4">
+          <div v-for="task in tasks" :key="task.id" class="card p-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-lg font-semibold text-primary">{{ task.title }}</h3>
+                <p class="text-secondary">{{ task.description }}</p>
+              </div>
+              <div class="flex gap-2">
+                <button @click="openTaskForm(task)" class="btn btn-secondary">
+                  Edit
+                </button>
+                <button @click="deleteTask(task.id)" class="btn btn-danger">
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </main>
 
     <!-- Project Form Modal -->
     <ProjectForm
@@ -153,15 +186,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { projectsApi, tasksApi } from '@/services/api'
 import ProjectList from '@/components/Project/ProjectList.vue'
 import TaskList from '@/components/Task/TaskList.vue'
 import ProjectForm from '@/components/Project/ProjectForm.vue'
 import TaskForm from '@/components/Task/TaskForm.vue'
 
 const authStore = useAuthStore()
-const isAuthenticated = authStore.isAuthenticated
+const isAuthenticated = computed(() => !!authStore.token)
 
 // Mobile menu state
 const isMobileMenuOpen = ref(false)
@@ -174,10 +208,45 @@ const closeMobileMenu = () => {
 
 // Section state
 const currentSection = ref('projects')
+const projects = ref([])
+const tasks = ref([])
+const loading = ref(false)
+const error = ref(null)
+
 const switchSection = (section) => {
   currentSection.value = section
-  closeMobileMenu()
+  loadData()
 }
+
+const loadData = async () => {
+  if (!isAuthenticated.value) return
+
+  loading.value = true
+  error.value = null
+  
+  try {
+    if (currentSection.value === 'projects') {
+      const [projectsResponse, tasksResponse] = await Promise.all([
+        projectsApi.getAll(),
+        tasksApi.getAll()
+      ])
+      projects.value = projectsResponse.data
+      tasks.value = tasksResponse.data
+    } else if (currentSection.value === 'tasks') {
+      const tasksResponse = await tasksApi.getAll()
+      tasks.value = tasksResponse.data
+    }
+  } catch (err) {
+    error.value = err.message || 'Error loading data'
+    console.error('Error loading data:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+const projectTasks = computed(() => (projectId) => {
+  return tasks.value.filter(task => task.projectId === projectId)
+})
 
 // Form states
 const showProjectForm = ref(false)
@@ -212,6 +281,30 @@ const handleProjectSuccess = () => {
 const handleTaskSuccess = () => {
   closeTaskForm()
 }
+
+const deleteProject = async (projectId) => {
+  try {
+    await projectsApi.delete(projectId)
+    projects.value = projects.value.filter(p => p.id !== projectId)
+    tasks.value = tasks.value.filter(t => t.projectId !== projectId)
+  } catch (err) {
+    error.value = err.message || 'Error deleting project'
+    console.error('Error deleting project:', err)
+  }
+}
+
+const deleteTask = async (taskId) => {
+  try {
+    await tasksApi.delete(taskId)
+    tasks.value = tasks.value.filter(t => t.id !== taskId)
+  } catch (err) {
+    error.value = err.message || 'Error deleting task'
+    console.error('Error deleting task:', err)
+  }
+}
+
+// Load initial data
+loadData()
 </script>
 
 <style scoped>
@@ -233,5 +326,45 @@ const handleTaskSuccess = () => {
 
 .cta {
   background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+}
+
+.sidebar {
+  width: 250px;
+  background-color: var(--secondary);
+  border-right: 1px solid var(--border-color);
+  transition: transform 0.3s ease;
+}
+
+.sidebar-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.sidebar-button:hover {
+  background-color: var(--hover-color);
+}
+
+.sidebar-button.active {
+  background-color: var(--primary);
+  color: var(--primary-text);
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 50;
+    transform: translateX(-100%);
+  }
+
+  .sidebar.active {
+    transform: translateX(0);
+  }
 }
 </style> 

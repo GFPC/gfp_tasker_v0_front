@@ -14,6 +14,7 @@ async function handleSubmit() {
     error.value = 'Пожалуйста, заполните все поля'
     return
   }
+  console.log('Signing in...')
 
   isLoading.value = true
   error.value = ''

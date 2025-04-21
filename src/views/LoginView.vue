@@ -78,8 +78,9 @@ const handleSubmit = async () => {
   error.value = null;
   try {
     await authStore.login(form.value);
+    router.push('/');
   } catch (err) {
-    error.value = err.message;
+    error.value = err.response?.data?.detail || 'Login failed';
   } finally {
     loading.value = false;
   }

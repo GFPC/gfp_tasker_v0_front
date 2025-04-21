@@ -17,37 +17,21 @@ const toggleMobileMenu = () => {
 }
 
 // Состояние авторизации
-const isAuthenticated = authStore.isAuthenticated
-const currentUser = ref(null)
-const showLoginForm = ref(false)
-const showRegisterForm = ref(false)
+const isAuthenticated = computed(() => {
+  const token = localStorage.getItem('access_token')
+  return !!token
+})
 
 // Проверка авторизации
 const checkAuth = async () => {
   const token = localStorage.getItem('access_token')
   if (token) {
     try {
-      const response = await usersApi.getMe()
-      currentUser.value = response.data
-      isAuthenticated.value = true
+      await authStore.fetchCurrentUser()
     } catch (error) {
       localStorage.removeItem('access_token')
       router.push('/login')
     }
-  } else {
-    router.push('/login')
-  }
-}
-
-// Выход из системы
-const logout = async () => {
-  try {
-    await authApi.logout()
-  } finally {
-    localStorage.removeItem('access_token')
-    currentUser.value = null
-    isAuthenticated.value = false
-    router.push('/login')
   }
 }
 
@@ -135,8 +119,8 @@ function openTaskForm(task = null) {
 }
 
 // Загрузка данных при монтировании и при смене раздела
-onMounted(() => {
-  checkAuth()
+onMounted(async () => {
+  await checkAuth()
   if (isAuthenticated.value) {
     loadData()
   }
@@ -166,7 +150,7 @@ const projectTasks = computed(() => (projectId) => {
         <div class="flex items-center gap-4">
           <template v-if="!isAuthenticated">
             <router-link to="/login" class="btn btn-secondary">
-              Sign In
+              Log In
             </router-link>
             <router-link to="/register" class="btn btn-primary">
               Sign Up
@@ -179,9 +163,75 @@ const projectTasks = computed(() => (projectId) => {
       </div>
     </header>
     <main class="flex-1 bg-primary">
-      <router-view v-slot="{ Component }">
-        <component :is="Component" :is-mobile-menu-open="isMobileMenuOpen" @toggle-mobile-menu="toggleMobileMenu" />
-      </router-view>
+      <div class="container mx-auto px-4 py-8">
+        <div class="flex flex-col md:flex-row gap-8">
+          <!-- Мобильное меню -->
+          <div 
+            v-if="isMobileMenuOpen" 
+            class="fixed inset-0 bg-black bg-opacity-50 z-50 md:hidden"
+            @click="isMobileMenuOpen = false"
+          ></div>
+          <aside 
+            :class="[
+              'fixed inset-y-0 left-0 w-64 bg-secondary transform transition-transform duration-200 ease-in-out z-50 md:hidden',
+              isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+            ]"
+          >
+            <div class="p-4">
+              <template v-if="!isAuthenticated">
+                <router-link 
+                  to="/login" 
+                  class="btn btn-secondary w-full mb-4"
+                  @click="isMobileMenuOpen = false"
+                >
+                  Sign In
+                </router-link>
+                <router-link 
+                  to="/register" 
+                  class="btn btn-primary w-full"
+                  @click="isMobileMenuOpen = false"
+                >
+                  Sign Up
+                </router-link>
+              </template>
+              <template v-else>
+                <nav class="space-y-2">
+                  <button 
+                    @click="switchSection('projects')"
+                    :class="[
+                      'w-full p-2 rounded-lg transition-colors',
+                      activeSection === 'projects' ? 'bg-primary text-primary' : 'hover:bg-hover-color'
+                    ]"
+                  >
+                    Projects
+                  </button>
+                  <button 
+                    @click="switchSection('tasks')"
+                    :class="[
+                      'w-full p-2 rounded-lg transition-colors',
+                      activeSection === 'tasks' ? 'bg-primary text-primary' : 'hover:bg-hover-color'
+                    ]"
+                  >
+                    Tasks
+                  </button>
+                  <button 
+                    @click="switchSection('employees')"
+                    :class="[
+                      'w-full p-2 rounded-lg transition-colors',
+                      activeSection === 'employees' ? 'bg-primary text-primary' : 'hover:bg-hover-color'
+                    ]"
+                  >
+                    Employees
+                  </button>
+                </nav>
+              </template>
+            </div>
+          </aside>
+          <router-view v-slot="{ Component }">
+            <component :is="Component" :is-mobile-menu-open="isMobileMenuOpen" @toggle-mobile-menu="toggleMobileMenu" />
+          </router-view>
+        </div>
+      </div>
     </main>
   </div>
 </template>

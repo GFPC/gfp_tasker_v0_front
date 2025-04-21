@@ -5,16 +5,16 @@ import router from '@/router'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
-  const token = ref(localStorage.getItem('token') || null)
+  const token = ref(localStorage.getItem('access_token') || null)
   const loading = ref(false)
   const error = ref(null)
 
   const setToken = (newToken) => {
     token.value = newToken
     if (newToken) {
-      localStorage.setItem('token', newToken)
+      localStorage.setItem('access_token', newToken)
     } else {
-      localStorage.removeItem('token')
+      localStorage.removeItem('access_token')
     }
   }
 
@@ -23,11 +23,14 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
     try {
       const response = await authApi.login(credentials)
-      setToken(response.data.token)
-      user.value = response.data.user
-      router.push('/')
+      if (response.data.access_token) {
+        setToken(response.data.access_token)
+        await fetchCurrentUser()
+        return response
+      }
+      throw new Error('No access token received')
     } catch (err) {
-      error.value = err.response?.data?.message || 'Login failed'
+      error.value = err.response?.data?.detail || 'Login failed'
       throw err
     } finally {
       loading.value = false
@@ -39,11 +42,14 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
     try {
       const response = await authApi.register(userData)
-      setToken(response.data.token)
-      user.value = response.data.user
-      router.push('/')
+      if (response.data.access_token) {
+        setToken(response.data.access_token)
+        await fetchCurrentUser()
+        return response
+      }
+      throw new Error('No access token received')
     } catch (err) {
-      error.value = err.response?.data?.message || 'Registration failed'
+      error.value = err.response?.data?.detail || 'Registration failed'
       throw err
     } finally {
       loading.value = false
@@ -58,7 +64,7 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = null
       router.push('/login')
     } catch (err) {
-      error.value = err.response?.data?.message || 'Logout failed'
+      error.value = err.response?.data?.detail || 'Logout failed'
       throw err
     } finally {
       loading.value = false
