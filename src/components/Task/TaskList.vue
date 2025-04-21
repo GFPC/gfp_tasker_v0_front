@@ -5,28 +5,39 @@ import TaskForm from './TaskForm.vue'
 const props = defineProps({
   tasks: {
     type: Array,
-    required: true
+    required: true,
+    default: () => []
+  },
+  projects: {
+    type: Array,
+    required: true,
+    default: () => []
   }
 })
 
 const emit = defineEmits(['success'])
 
 const showTaskForm = ref(false)
-const selectedTask = ref(null)
+const editingTask = ref(null)
 
 const openTaskForm = (task = null) => {
-  selectedTask.value = task
+  editingTask.value = task
   showTaskForm.value = true
 }
 
 const closeTaskForm = () => {
   showTaskForm.value = false
-  selectedTask.value = null
+  editingTask.value = null
 }
 
 const handleTaskSuccess = () => {
   emit('success')
   closeTaskForm()
+}
+
+const getProjectName = (projectId) => {
+  const project = props.projects.find(p => p.id === projectId)
+  return project ? project.name : 'Unknown Project'
 }
 
 const getStatusText = (status) => {
@@ -58,50 +69,62 @@ const getStatusClass = (status) => {
 
 <template>
   <div class="space-y-6">
-    <div v-if="tasks.length === 0" class="text-center py-12">
-      <p class="text-tertiary">Нет задач</p>
+    <div class="flex justify-between items-center">
+      <h2 class="text-2xl font-bold text-primary">Tasks</h2>
+      <button @click="openTaskForm()" class="btn btn-primary">
+        New Task
+      </button>
     </div>
 
-    <div v-else class="grid grid-cols-1 gap-4">
-      <div 
-        v-for="task in tasks" 
+    <div v-if="tasks.length === 0" class="text-center py-8">
+      <p class="text-tertiary">No tasks yet. Create your first task!</p>
+    </div>
+
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div
+        v-for="task in tasks"
         :key="task.id"
-        class="card"
+        class="card p-6 hover:shadow-lg transition-shadow"
       >
-        <div class="flex justify-between items-start">
+        <div class="flex justify-between items-start mb-4">
           <div>
-            <h3 class="text-lg font-semibold text-primary">{{ task.title }}</h3>
-            <p class="text-secondary mt-1">{{ task.description }}</p>
-            <div class="mt-2 flex items-center space-x-4">
-              <span class="text-sm text-tertiary">
-                Проект: {{ task.project?.name || 'Без проекта' }}
-              </span>
-            </div>
+            <h3 class="text-xl font-semibold text-primary">{{ task.title }}</h3>
+            <p class="text-tertiary text-sm mt-1">
+              {{ getProjectName(task.project_id) }}
+            </p>
           </div>
-          <div class="flex space-x-2">
-            <span 
-              class="badge"
-              :class="getStatusClass(task.status)"
-            >
-              {{ getStatusText(task.status) }}
-            </span>
-            <button 
-              @click="openTaskForm(task)"
-              class="btn btn-secondary"
-            >
-              Редактировать
-            </button>
-          </div>
+          <button
+            @click="openTaskForm(task)"
+            class="btn btn-secondary"
+          >
+            Edit
+          </button>
+        </div>
+        <p class="text-secondary mb-4">{{ task.description }}</p>
+        <div class="flex justify-between items-center">
+          <span
+            :class="{
+              'badge-success': task.status === 'completed',
+              'badge-warning': task.status === 'in_progress',
+              'badge-danger': task.status === 'pending'
+            }"
+            class="badge"
+          >
+            {{ task.status }}
+          </span>
+          <span class="text-tertiary text-sm">
+            Due: {{ new Date(task.due_date).toLocaleDateString() }}
+          </span>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Форма задачи -->
-  <TaskForm
-    v-if="showTaskForm"
-    :task="selectedTask"
-    @close="closeTaskForm"
-    @success="handleTaskSuccess"
-  />
+    <TaskForm
+      v-if="showTaskForm"
+      :task="editingTask"
+      :projects="projects"
+      @success="handleTaskSuccess"
+      @close="closeTaskForm"
+    />
+  </div>
 </template> 
