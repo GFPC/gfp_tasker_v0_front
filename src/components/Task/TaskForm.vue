@@ -87,105 +87,95 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-    <div class="bg-white rounded-lg p-6 w-full max-w-md">
-      <h2 class="text-xl font-semibold mb-4">
-        {{ task ? 'Редактировать задачу' : 'Новая задача' }}
-      </h2>
-
-      <form @submit.prevent="handleSubmit" class="space-y-4">
-        <div>
-          <label for="title" class="block text-sm font-medium text-gray-700">Название</label>
-          <input
-            id="title"
-            v-model="title"
-            type="text"
-            required
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
-          />
-        </div>
-
-        <div>
-          <label for="description" class="block text-sm font-medium text-gray-700">Описание</label>
-          <textarea
-            id="description"
-            v-model="description"
-            rows="3"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900 resize-none overflow-y-auto"
-          ></textarea>
-        </div>
-
-        <div>
-          <label for="project" class="block text-sm font-medium text-gray-700">Проект</label>
-          <select
-            id="project"
-            v-model="projectId"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
-          >
-            <option value="">Без проекта</option>
-            <option v-for="project in projects" :key="project.id" :value="project.id">
-              {{ project.name }}
-            </option>
-          </select>
-        </div>
-
-        <div>
-          <label for="status" class="block text-sm font-medium text-gray-700">Статус</label>
-          <select
-            id="status"
-            v-model="status"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
-          >
-            <option v-for="option in statusOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
-          </select>
-        </div>
-
-        <div>
-          <label for="priority" class="block text-sm font-medium text-gray-700">Приоритет</label>
-          <select
-            id="priority"
-            v-model="priority"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
-          >
-            <option v-for="option in priorityOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
-          </select>
-        </div>
-
-        <div>
-          <label for="dueDate" class="block text-sm font-medium text-gray-700">Срок выполнения</label>
-          <input
-            id="dueDate"
-            v-model="dueDate"
-            type="date"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-gray-900"
-          />
-        </div>
-
-        <div v-if="error" class="text-red-500 text-sm">
-          {{ error }}
-        </div>
-
-        <div class="flex justify-end space-x-3">
-          <button
-            type="button"
-            @click="emit('close')"
-            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-          >
-            Отмена
-          </button>
-          <button
-            type="submit"
-            :disabled="isLoading"
-            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
-          >
-            {{ isLoading ? 'Сохранение...' : 'Сохранить' }}
-          </button>
-        </div>
-      </form>
+  <div class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">{{ task ? 'Редактировать задачу' : 'Новая задача' }}</h3>
+        <button class="modal-close" @click="$emit('close')">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form @submit.prevent="handleSubmit" class="form-container">
+          <div class="form-group">
+            <label class="form-label">Название задачи</label>
+            <input
+              type="text"
+              v-model="title"
+              class="form-input"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Описание</label>
+            <textarea
+              v-model="description"
+              class="form-textarea"
+              rows="4"
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Проект</label>
+            <select
+              v-model="projectId"
+              class="form-select"
+              required
+            >
+              <option value="">Выберите проект</option>
+              <option
+                v-for="project in projects"
+                :key="project.id"
+                :value="project.id"
+              >
+                {{ project.name }}
+              </option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Статус</label>
+            <select
+              v-model="status"
+              class="form-select"
+              required
+            >
+              <option value="todo">К выполнению</option>
+              <option value="in_progress">В процессе</option>
+              <option value="done">Выполнено</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Приоритет</label>
+            <select
+              v-model="priority"
+              class="form-select"
+              required
+            >
+              <option value="low">Низкий</option>
+              <option value="medium">Средний</option>
+              <option value="high">Высокий</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Срок выполнения</label>
+            <input
+              type="date"
+              v-model="dueDate"
+              class="form-input"
+            />
+          </div>
+          <div v-if="error" class="form-error">{{ error }}</div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" @click="$emit('close')">
+              Отмена
+            </button>
+            <button type="submit" class="btn btn-primary" :disabled="isLoading">
+              {{ isLoading ? 'Сохранение...' : (task ? 'Сохранить' : 'Создать') }}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </template> 

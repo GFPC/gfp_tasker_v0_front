@@ -6,6 +6,15 @@ import TaskList from '../components/Task/TaskList.vue'
 import ProjectForm from '../components/Project/ProjectForm.vue'
 import TaskForm from '../components/Task/TaskForm.vue'
 
+const props = defineProps({
+  isMobileMenuOpen: {
+    type: Boolean,
+    required: true
+  }
+})
+
+const emit = defineEmits(['toggle-mobile-menu'])
+
 const activeSection = ref('projects')
 const projects = ref([])
 const tasks = ref([])
@@ -14,8 +23,6 @@ const error = ref(null)
 
 const showProjectForm = ref(false)
 const showTaskForm = ref(false)
-
-const isMobileMenuOpen = ref(false)
 
 const loadData = async () => {
   isLoading.value = true
@@ -49,7 +56,7 @@ const loadData = async () => {
 
 const switchSection = (section) => {
   activeSection.value = section
-  closeMobileMenu()
+  emit('toggle-mobile-menu')
   loadData()
 }
 
@@ -77,61 +84,20 @@ const handleTaskSuccess = () => {
   loadData()
 }
 
-const toggleMobileMenu = () => {
-  isMobileMenuOpen.value = !isMobileMenuOpen.value
-}
-
-const closeMobileMenu = () => {
-  isMobileMenuOpen.value = false
-}
-
 onMounted(loadData)
 </script>
 
 <template>
   <div class="flex h-full">
-    <!-- Mobile menu button -->
-    <button
-      @click="toggleMobileMenu"
-      class="mobile-menu-button lg:hidden"
-      :class="{ 'text-accent': isMobileMenuOpen }"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-6 w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          v-if="isMobileMenuOpen"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M6 18L18 6M6 6l12 12"
-        />
-        <path
-          v-else
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M4 6h16M4 12h16M4 18h16"
-        />
-      </svg>
-    </button>
-
     <!-- Mobile overlay -->
     <div
       class="mobile-overlay lg:hidden"
       :class="{ active: isMobileMenuOpen }"
-      @click="closeMobileMenu"
+      @click="emit('toggle-mobile-menu')"
     ></div>
 
     <!-- Боковое меню -->
     <aside class="sidebar" :class="{ active: isMobileMenuOpen }">
-      <div class="sidebar-header">
-        <h2 class="sidebar-title">Меню</h2>
-      </div>
       <nav class="sidebar-nav">
         <ul class="space-y-2">
           <li class="sidebar-item">
@@ -163,7 +129,7 @@ onMounted(loadData)
     </aside>
 
     <!-- Основной контент -->
-    <main class="main-content flex-1 p-4 lg:p-6 lg:ml-[280px] mt-16">
+    <main class="main-content flex-1 p-4 lg:p-6 lg:ml-[280px]">
       <!-- Сообщение об ошибке -->
       <div v-if="error" class="mb-4 p-4 bg-danger text-white rounded-lg">
         {{ error }}
