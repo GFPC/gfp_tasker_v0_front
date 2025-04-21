@@ -1,9 +1,9 @@
 import axios from 'axios'
-import { API_BASE_URL, API_ENDPOINTS } from '../constants/api'
+import { API_ENDPOINTS } from '../constants/api'
 
 // Создаем экземпляр axios с базовыми настройками
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -11,7 +11,7 @@ const api = axios.create({
 
 // Добавляем интерцептор для обработки токенов
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
+  const token = localStorage.getItem('token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
@@ -32,14 +32,10 @@ api.interceptors.response.use(
 
 // Auth
 export const authApi = {
-  register: (data) => api.post(API_ENDPOINTS.AUTH.REGISTER, data),
-  login: (data) => {
-    const formData = new FormData()
-    formData.append('username', data.email)
-    formData.append('password', data.password)
-    return api.post(API_ENDPOINTS.AUTH.LOGIN, formData)
-  },
-  logout: () => api.post(API_ENDPOINTS.AUTH.LOGOUT)
+  login: (credentials) => api.post('/auth/login', credentials),
+  register: (userData) => api.post('/auth/register', userData),
+  logout: () => api.post('/auth/logout'),
+  getCurrentUser: () => api.get('/auth/me'),
 }
 
 // Projects
@@ -95,4 +91,6 @@ export const notificationsApi = {
   getAll: () => api.get(API_ENDPOINTS.NOTIFICATIONS),
   markAsRead: (id) => api.post(API_ENDPOINTS.MARK_NOTIFICATION_READ(id)),
   markAllAsRead: () => api.post(API_ENDPOINTS.MARK_ALL_NOTIFICATIONS_READ),
-} 
+}
+
+export default api 

@@ -1,18 +1,14 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import Task from './components/Task.vue'
-import Project from './components/Project.vue'
-import LoginForm from './components/Auth/LoginForm.vue'
-import RegisterForm from './components/Auth/RegisterForm.vue'
-import ProjectForm from './components/Project/ProjectForm.vue'
-import TaskForm from './components/Task/TaskForm.vue'
 import { projectsApi, tasksApi, usersApi, authApi } from './services/api'
 import './assets/main.css'
 import ThemeToggle from './components/ThemeToggle.vue'
 import './styles/themes.css'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 const isMobileMenuOpen = ref(false)
 
@@ -21,7 +17,7 @@ const toggleMobileMenu = () => {
 }
 
 // Состояние авторизации
-const isAuthenticated = ref(false)
+const isAuthenticated = authStore.isAuthenticated
 const currentUser = ref(null)
 const showLoginForm = ref(false)
 const showRegisterForm = ref(false)
@@ -158,36 +154,31 @@ const projectTasks = computed(() => (projectId) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-primary">
-    <header class="fixed top-0 left-0 right-0 h-16 bg-secondary border-b border-border-color z-50">
-      <div class="container mx-auto h-full px-4 flex items-center justify-between">
-        <!-- Mobile menu button -->
-        <button 
-          class="mobile-menu-button lg:hidden"
-          @click="toggleMobileMenu"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+  <div class="min-h-screen flex flex-col">
+    <header class="bg-secondary border-b border-border-color py-4">
+      <div class="container mx-auto px-4 flex justify-between items-center">
+        <router-link to="/" class="logo flex items-center gap-3">
+          <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.8L20 9l-8 4-8-4 8-4.2zM4 9.2l8 4v8.6l-8-4V9.2zm10 12.6v-8.6l8-4v8.6l-8 4z"/>
           </svg>
-        </button>
-
-        <!-- Logo - centered on mobile -->
-        <div class="flex-1 lg:flex-none flex justify-center lg:justify-start">
-          <a href="/" class="logo">
-            <svg class="logo-icon hidden lg:block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-            <span>GFP Tasker v0</span>
-          </a>
-        </div>
-
-        <!-- Theme toggle - right side -->
-        <div class="header-actions">
-          <ThemeToggle />
+          <span>GF Tasker</span>
+        </router-link>
+        <div class="flex items-center gap-4">
+          <template v-if="!isAuthenticated">
+            <router-link to="/login" class="btn btn-secondary">
+              Sign In
+            </router-link>
+            <router-link to="/register" class="btn btn-primary">
+              Sign Up
+            </router-link>
+          </template>
+          <template v-else>
+            <ThemeToggle />
+          </template>
         </div>
       </div>
     </header>
-    <main class="pt-16">
+    <main class="flex-1 bg-primary">
       <router-view v-slot="{ Component }">
         <component :is="Component" :is-mobile-menu-open="isMobileMenuOpen" @toggle-mobile-menu="toggleMobileMenu" />
       </router-view>
@@ -196,5 +187,5 @@ const projectTasks = computed(() => (projectId) => {
 </template>
 
 <style>
-@import './styles/themes.css';
+@import '@/styles/themes.css';
 </style>
